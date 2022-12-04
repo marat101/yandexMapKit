@@ -1,14 +1,12 @@
 package com.turtleteam.turtletaxi.ui.fragments.mapfragment
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.turtleteam.turtletaxi.LocationService
 import com.turtleteam.turtletaxi.databinding.FragmentMapBinding
 import com.turtleteam.turtletaxi.ui.fragments.basefragment.BaseFragment
 import com.yandex.mapkit.Animation
@@ -16,30 +14,30 @@ import com.yandex.mapkit.MapKitFactory
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.layers.GeoObjectTapEvent
 import com.yandex.mapkit.layers.GeoObjectTapListener
+import com.yandex.mapkit.layers.ObjectEvent
 import com.yandex.mapkit.map.*
 import com.yandex.mapkit.map.Map
+import com.yandex.mapkit.user_location.UserLocationObjectListener
+import com.yandex.mapkit.user_location.UserLocationView
 import com.yandex.runtime.ui_view.ViewProvider
 
-
-class MapFragment : BaseFragment<FragmentMapBinding>(), LocationListener, GeoObjectTapListener,
-    InputListener {
+class MapFragment : BaseFragment<FragmentMapBinding>(), GeoObjectTapListener,
+    InputListener, UserLocationObjectListener {
 
     private lateinit var userLocation: PlacemarkMapObject
     private lateinit var endPoint: PlacemarkMapObject
-    private lateinit var locationManager: LocationManager
+    private lateinit var locService: LocationService
+    private var isShowed = false
 
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        locationManager = context?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-            1000 * 10,
-            10F,
-            this)
+        locService = LocationService(requireContext())
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
 
         endPoint = binding.mapview.map.mapObjects.addPlacemark(Point(0.0, 0.0),
             ViewProvider(binding.finishMarker))
@@ -47,21 +45,8 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), LocationListener, GeoObj
         userLocation = binding.mapview.map.mapObjects.addPlacemark(Point(0.0, 0.0),
             ViewProvider(binding.userMarker))
 
-        binding.mapview.map.addTapListener(this)
-        binding.mapview.map.addInputListener(this)
-    }
-
-    @SuppressLint("MissingPermission")
-    override fun onProviderEnabled(provider: String) {
-        locationManager.getLastKnownLocation(provider)?.let { this }
-    }
-
-    override fun onLocationChanged(p0: Location) {
-        userLocation.geometry = Point(p0.latitude, p0.longitude)
-        binding.mapview.map.move(
-            CameraPosition(userLocation.geometry, 15.5f, 0.0f, 0.0f),
-            Animation(Animation.Type.LINEAR, 0.5F),
-            null)
+        addClickListeners()
+        observableData()
     }
 
     override fun onMapTap(p0: Map, p1: Point) {
@@ -77,6 +62,9 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), LocationListener, GeoObj
             .geoObject
             .metadataContainer
             .getItem(GeoObjectSelectionMetadata::class.java)
+        Log.e("aaaaaaa", p0.geoObject.attributionMap.keys.toString())
+
+//        p0.geoObject.geometry.forEach {  }
 
         binding.mapview.map.selectGeoObject(selectionMetadata.id,
             selectionMetadata.layerId)
@@ -84,9 +72,18 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), LocationListener, GeoObj
         return true
     }
 
+    override fun onObjectAdded(p0: UserLocationView) {
+    }
+
+    override fun onObjectRemoved(p0: UserLocationView) {
+    }
+
+    override fun onObjectUpdated(p0: UserLocationView, p1: ObjectEvent) {
+    }
+
     override fun onPause() {
         super.onPause()
-        locationManager.removeUpdates(this)
+        locService.locationManager.removeUpdates(locService)
     }
 
     override fun onStop() {
@@ -99,6 +96,35 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), LocationListener, GeoObj
         super.onStart()
         MapKitFactory.getInstance().onStart()
         binding.mapview.onStart()
+    }
+
+    private fun observableData() {
+        locService.currentLocation.observe(viewLifecycleOwner) {
+            if (!isShowed) {
+                binding.mapview.map.move(
+                    CameraPosition(it, 16.5f, 0.0f, 0.0f),
+                    Animation(Animation.Type.LINEAR, 0.5F),
+                    null)
+                userLocation.geometry = it
+                isShowed = true
+            }
+        }
+    }
+
+    private fun addClickListeners() {
+        binding.moveToUser.setOnClickListener {
+            if (locService.currentLocation.value != null) {
+                binding.mapview.map.move(
+                    CameraPosition(locService.currentLocation.value!!, 16.5f, 0.0f, 0.0f),
+                    Animation(Animation.Type.LINEAR, 0.5F),
+                    null)
+                userLocation.geometry = locService.currentLocation.value!!
+            }
+        }
+        binding.mapview.map.apply {
+            addTapListener(this@MapFragment)
+            addInputListener(this@MapFragment)
+        }
     }
 
     override fun getViewBinding(

@@ -1,32 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
 
     <ImageView
         android:id="@+id/userMarker"
-        android:visibility="gone"
-        tools:visibility="visible"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingBottom="33dp"
-        android:src="@drawable/ic_current_location"/>
+        android:src="@drawable/ic_current_location"
+        android:visibility="gone"
+        tools:visibility="visible" />
 
     <ImageView
         android:id="@+id/finishMarker"
-        android:visibility="gone"
-        tools:visibility="visible"
-        android:paddingStart="13dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:paddingStart="13dp"
         android:paddingBottom="33dp"
         android:src="@drawable/ic_endpoint"
-        tools:ignore="RtlSymmetry" />
+        android:visibility="gone"
+        tools:ignore="RtlSymmetry"
+        tools:visibility="visible" />
 
     <com.yandex.mapkit.mapview.MapView
         android:id="@+id/mapview"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
+    <ImageButton
+        android:id="@+id/move_to_user"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:rotation="-30"
+        android:elevation="16dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="30dp"
+        android:background="@drawable/round_white"
+        android:src="@drawable/ic_navigation"/>
 </FrameLayout>

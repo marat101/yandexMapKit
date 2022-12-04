@@ -1,6 +1,7 @@
 package com.turtleteam.turtletaxi
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import com.yandex.mapkit.MapKitFactory
 
