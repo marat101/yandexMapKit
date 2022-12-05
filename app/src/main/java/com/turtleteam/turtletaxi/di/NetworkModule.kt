@@ -1,5 +1,7 @@
 package com.turtleteam.turtletaxi.di
 
+import com.turtleteam.turtletaxi.data.api.GeoObjectsApiService
+import com.turtleteam.turtletaxi.utils.Constants
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,16 +16,13 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl("")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
+    fun provideRetrofit(): Retrofit = Retrofit.Builder()
+        .baseUrl(Constants.YANDEX_SEARCH_URL)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
 
-//    @Provides
-//    @Singleton
-//    fun provideApiService(retrofit: Retrofit): ApiService {
-//        return retrofit.create(ApiService::class.java)
-//    }
+    @Provides
+    @Singleton
+    fun provideApiService(retrofit: Retrofit): GeoObjectsApiService =
+        retrofit.create(GeoObjectsApiService::class.java)
 }

@@ -14,15 +14,12 @@ import com.yandex.mapkit.MapKitFactory
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.layers.GeoObjectTapEvent
 import com.yandex.mapkit.layers.GeoObjectTapListener
-import com.yandex.mapkit.layers.ObjectEvent
 import com.yandex.mapkit.map.*
 import com.yandex.mapkit.map.Map
-import com.yandex.mapkit.user_location.UserLocationObjectListener
-import com.yandex.mapkit.user_location.UserLocationView
 import com.yandex.runtime.ui_view.ViewProvider
 
 class MapFragment : BaseFragment<FragmentMapBinding>(), GeoObjectTapListener,
-    InputListener, UserLocationObjectListener {
+    InputListener {
 
     private lateinit var userLocation: PlacemarkMapObject
     private lateinit var endPoint: PlacemarkMapObject
@@ -32,6 +29,7 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), GeoObjectTapListener,
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        MapKitFactory.initialize(this.context)
         locService = LocationService(requireContext())
     }
 
@@ -62,23 +60,18 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), GeoObjectTapListener,
             .geoObject
             .metadataContainer
             .getItem(GeoObjectSelectionMetadata::class.java)
-        Log.e("aaaaaaa", p0.geoObject.attributionMap.keys.toString())
+        p0.geoObject.geometry.forEach{Log.e("aaaaaaa", "${it.point?.latitude} ${it.point?.longitude}")}
 
-//        p0.geoObject.geometry.forEach {  }
+
+        binding.mapview.map.move(
+            CameraPosition(p0.geoObject.geometry.random().point!!, 16.5f, 0.0f, 0.0f),
+            Animation(Animation.Type.LINEAR, 0.5F),
+            null)
 
         binding.mapview.map.selectGeoObject(selectionMetadata.id,
             selectionMetadata.layerId)
 
         return true
-    }
-
-    override fun onObjectAdded(p0: UserLocationView) {
-    }
-
-    override fun onObjectRemoved(p0: UserLocationView) {
-    }
-
-    override fun onObjectUpdated(p0: UserLocationView, p1: ObjectEvent) {
     }
 
     override fun onPause() {
@@ -105,9 +98,9 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), GeoObjectTapListener,
                     CameraPosition(it, 16.5f, 0.0f, 0.0f),
                     Animation(Animation.Type.LINEAR, 0.5F),
                     null)
-                userLocation.geometry = it
                 isShowed = true
             }
+            userLocation.geometry = it
         }
     }
 

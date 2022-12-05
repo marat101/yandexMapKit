@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
-import com.yandex.mapkit.MapKitFactory
 
 abstract class BaseFragment<VB: ViewBinding>: Fragment() {
 
@@ -18,8 +17,6 @@ abstract class BaseFragment<VB: ViewBinding>: Fragment() {
         savedInstanceState: Bundle?,
     ): View? {
         binding = getViewBinding(inflater, container)
-        MapKitFactory.initialize(context)
-
         return binding.root
     }
 

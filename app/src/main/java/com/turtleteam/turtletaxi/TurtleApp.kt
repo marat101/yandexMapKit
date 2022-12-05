@@ -5,5 +5,4 @@ import com.yandex.mapkit.MapKitFactory
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class TurtleApp: Application() {
-}
+class TurtleApp: Application()
